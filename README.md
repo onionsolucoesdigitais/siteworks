@@ -20,3 +20,13 @@ Gerador de mini-sites para empresas a partir do CNPJ (dados via BrasilAPI). Sem 
 O certificado de cada domínio/subdomínio é emitido na primeira visita, e só para sites **publicados**
 (o Caddy consulta `/api/domain-check`). Painel: `https://BASE_DOMAIN/painel`.
 Backup: copie a pasta `data/`.
+
+## Deploy na Railway
+
+Railway já entrega HTTPS, então **não use** o Caddy/compose lá (o `Dockerfile` é detectado automaticamente).
+
+1. New Project → Deploy from GitHub repo → `painelpagamentos/siteworks`.
+2. Variables: `ADMIN_PASSWORD` e `BASE_DOMAIN` (domínio principal, ex. `seudominio.com.br`). `PORT` é injetada pela Railway.
+3. Settings → Volumes → New Volume com mount path `/app/data` (sem isso os sites somem a cada deploy).
+4. Settings → Networking → Custom Domain: adicione `seudominio.com.br` e `*.seudominio.com.br` (wildcard) e crie os CNAMEs/TXT que a Railway indicar.
+   Domínio próprio de um site: adicione-o também como Custom Domain na Railway e preencha "Domínio próprio" no painel.
