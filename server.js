@@ -60,7 +60,7 @@ async function lookupCnpj(cnpj) {
     d.numero, d.complemento, d.bairro,
     [d.municipio, d.uf].filter(Boolean).join('/'),
     d.cep && `CEP ${d.cep}`,
-  ].filter(Boolean).map(title).join(', ');
+  ].filter(Boolean).map(title).join(', ').replace(/\/([a-z]{2}),/, (m, u) => '/' + u.toUpperCase() + ',');
   const activity = title(d.cnae_fiscal_descricao);
   const services = [activity, ...(d.cnaes_secundarios || []).slice(0, 5).map((c) => title(c.descricao))].filter(Boolean);
   const phone = d.ddd_telefone_1 ? d.ddd_telefone_1.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : '';

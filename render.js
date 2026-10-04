@@ -17,8 +17,8 @@ function fmtCnpj(c) {
 
 const CSS = (t) => `:root{--p:${t.primary};--d:${t.dark};--s:${t.soft}}
 *{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1f2937;line-height:1.65;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth;color-scheme:light}
+body{background:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1f2937;line-height:1.65;-webkit-font-smoothing:antialiased}
 a{color:var(--p)}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 .skip{position:absolute;left:-999px}.skip:focus{left:10px;top:10px;background:#fff;padding:8px 12px;z-index:99}
