@@ -3,7 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { renderSite, THEMES, PAGES } = require('./render');
+const { renderSite, THEMES, PAGES, robots, sitemap } = require('./render');
 
 // .env simples
 try {
@@ -97,13 +97,40 @@ function findSiteByHost(host, sites) {
   }
 }
 
-function servePublicSite(res, site, page = 'home', base = '') {
+const MSG_FILE = path.join(__dirname, 'data', 'messages.json');
+const loadMsgs = () => { try { return JSON.parse(fs.readFileSync(MSG_FILE, 'utf8')); } catch { return []; } };
+const hits = new Map(); // limite simples por IP
+function rateLimited(ip) {
+  const now = Date.now(), arr = (hits.get(ip) || []).filter((t) => now - t < 3600e3);
+  arr.push(now); hits.set(ip, arr);
+  return arr.length > 5;
+}
+
+// sub: '' | pagina legal | robots.txt | sitemap.xml | contato
+async function servePublicSite(req, res, site, sub, base) {
   if (!site || !site.published) {
     res.writeHead(404, { 'content-type': 'text/html; charset=utf-8' });
     return res.end('<h1>Site não encontrado ou não publicado</h1>');
   }
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  const origin = `${proto}://${req.headers.host}`;
+  if (sub === 'robots.txt') { res.writeHead(200, { 'content-type': 'text/plain' }); return res.end(robots(origin, base)); }
+  if (sub === 'sitemap.xml') { res.writeHead(200, { 'content-type': 'application/xml' }); return res.end(sitemap(origin, base)); }
+  if (sub === 'contato' && req.method === 'POST') {
+    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    const b = await readBody(req);
+    if (b.website) return json(res, 200, { ok: true }); // honeypot
+    if (rateLimited(ip)) return json(res, 429, { error: 'Muitas mensagens, tente mais tarde' });
+    const clean = (v, n) => String(v || '').trim().slice(0, n);
+    const msg = { id: crypto.randomUUID(), siteId: site.id, siteName: site.name, name: clean(b.name, 100), email: clean(b.email, 120), phone: clean(b.phone, 30), message: clean(b.message, 2000), at: new Date().toISOString() };
+    if (!msg.name || !/^\S+@\S+\.\S+$/.test(msg.email) || !msg.message) return json(res, 400, { error: 'Dados inválidos' });
+    const all = loadMsgs(); all.push(msg);
+    fs.mkdirSync(path.dirname(MSG_FILE), { recursive: true });
+    fs.writeFileSync(MSG_FILE, JSON.stringify(all, null, 2));
+    return json(res, 200, { ok: true });
+  }
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-  res.end(renderSite(site, page, base));
+  res.end(renderSite(site, PAGES.includes(sub) ? sub : 'home', base, origin));
 }
 
 // ---------- API ----------
@@ -131,6 +158,10 @@ async function api(req, res, url) {
   if (!authed(req)) return json(res, 401, { error: 'Não autenticado' });
 
   if (p === '/api/config') return json(res, 200, { baseDomain: BASE_DOMAIN, port: PORT, themes: THEMES });
+
+  if (p === '/api/messages' && req.method === 'GET') return json(res, 200, loadMsgs().reverse());
+  const dm = p.match(/^\/api\/messages\/([\w-]+)$/);
+  if (dm && req.method === 'DELETE') { fs.writeFileSync(MSG_FILE, JSON.stringify(loadMsgs().filter((m) => m.id !== dm[1]), null, 2)); return json(res, 200, { ok: true }); }
 
   const sites = load();
   if (p === '/api/sites' && req.method === 'GET') return json(res, 200, sites);
@@ -189,15 +220,12 @@ http.createServer(async (req, res) => {
 
     // Sites publicados em subdominio/dominio proprio
     const hostSite = findSiteByHost(req.headers.host, load());
-    if (hostSite && !p.startsWith('/api/')) {
-      const pg = p.slice(1).replace(/\/$/, '');
-      return servePublicSite(res, hostSite, PAGES.includes(pg) ? pg : 'home', '');
-    }
+    if (hostSite && !p.startsWith('/api/')) return await servePublicSite(req, res, hostSite, p.slice(1).replace(/\/$/, ''), '');
 
     if (p.startsWith('/api/')) return await api(req, res, url);
 
-    const s = p.match(/^\/s\/([\w-]+)(?:\/([\w-]+))?\/?$/);
-    if (s) return servePublicSite(res, load().find((x) => x.slug === s[1]), PAGES.includes(s[2]) ? s[2] : 'home', '/s/' + s[1]);
+    const s = p.match(/^\/s\/([\w-]+)(?:\/([\w.-]+))?\/?$/);
+    if (s) return await servePublicSite(req, res, load().find((x) => x.slug === s[1]), s[2] || '', '/s/' + s[1]);
 
     const file = p === '/' ? 'index.html' : p === '/painel' ? 'painel.html' : p.slice(1);
     const full = path.join(PUBLIC, file);

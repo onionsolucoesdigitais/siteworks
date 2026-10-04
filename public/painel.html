@@ -50,6 +50,8 @@ a{color:#2563eb}
 
   <div class="card"><h2>Meus sites</h2><div id="list"></div></div>
 
+  <div class="card"><h2>Mensagens recebidas</h2><div id="msgs"></div></div>
+
   <div class="card" id="editor" hidden>
     <h2>Editar: <span id="etitle"></span></h2>
     <form id="form" onsubmit="saveSite(event)">
@@ -111,7 +113,12 @@ async function init() {
   $('form').theme.innerHTML = Object.entries(cfg.themes).map(([k, t]) => `<option value="${k}">${esc(t.name)}</option>`).join('');
   load();
 }
-async function load() { sites = await api('/api/sites'); render(); }
+async function load() { sites = await api('/api/sites'); render(); loadMsgs(); }
+async function loadMsgs() {
+  const m = await api('/api/messages');
+  $('msgs').innerHTML = m.length ? m.map((x) => `<div class="site"><div><b>${esc(x.name)}</b> · ${esc(x.email)} ${esc(x.phone)}<br><small>${esc(x.siteName)} · ${new Date(x.at).toLocaleString('pt-BR')}</small><br>${esc(x.message)}</div><button class="red" onclick="delMsg('${x.id}')">Apagar</button></div>`).join('') : '<p>Nenhuma mensagem.</p>';
+}
+async function delMsg(id) { await api('/api/messages/' + id, 'DELETE'); loadMsgs(); }
 
 function siteUrl(s) {
   return s.customDomain ? `http://${s.customDomain}` : `${location.origin}/s/${s.slug}`;
