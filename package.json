@@ -1,0 +1,8 @@
+{
+  "name": "site-works",
+  "version": "1.0.0",
+  "description": "Gerador de mini-sites para empresas a partir do CNPJ",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

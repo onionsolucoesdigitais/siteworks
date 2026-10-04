@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel - Site Works</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f1f5f9;color:#0f172a}
+header{background:#0b1020;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 5vw}
+header b span{color:#60a5fa}
+main{max-width:1000px;margin:28px auto;padding:0 5vw}
+.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:20px}
+h2{margin:0 0 14px;font-size:1.15rem}
+input,textarea,select{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;margin-top:4px}
+label{display:block;font-size:.85rem;font-weight:600;color:#475569;margin-bottom:12px}
+button{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}
+button.sec{background:#e2e8f0;color:#0f172a}button.red{background:#dc2626}button.green{background:#16a34a}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.row>*{flex:1;min-width:200px}.row button{flex:0 0 auto}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.site{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #e2e8f0;flex-wrap:wrap}
+.site:first-of-type{border-top:0}
+.badge{font-size:.75rem;padding:3px 9px;border-radius:99px;background:#fef3c7;color:#92400e;font-weight:700}
+.badge.on{background:#dcfce7;color:#166534}
+.msg{color:#dc2626;font-size:.9rem;margin-top:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+a{color:#2563eb}
+#login{max-width:360px;margin:12vh auto}
+</style>
+</head>
+<body>
+<div id="login" class="card" hidden>
+  <h2>Entrar no painel</h2>
+  <label>Senha<input id="pw" type="password" autofocus></label>
+  <button onclick="login()">Entrar</button><div class="msg" id="lmsg"></div>
+</div>
+
+<div id="app" hidden>
+<header><b>Site<span>Works</span></b><button class="sec" onclick="logout()">Sair</button></header>
+<main>
+  <div class="card" id="newCard">
+    <h2>Criar novo site</h2>
+    <div class="row">
+      <label>CNPJ da empresa<input id="cnpj" placeholder="00.000.000/0000-00" maxlength="18"></label>
+      <label>Meta tag de verificação (opcional)<input id="meta" placeholder="código do facebook-domain-verification"></label>
+      <button onclick="create()" id="createBtn">Criar site</button>
+    </div>
+    <div class="msg" id="cmsg"></div>
+  </div>
+
+  <div class="card"><h2>Meus sites</h2><div id="list"></div></div>
+
+  <div class="card" id="editor" hidden>
+    <h2>Editar: <span id="etitle"></span></h2>
+    <form id="form" onsubmit="saveSite(event)">
+      <div class="grid">
+        <label>Nome<input name="name"></label>
+        <label>Razão social<input name="legalName"></label>
+        <label>Título principal<input name="headline"></label>
+        <label>Slogan / atividade<input name="tagline"></label>
+        <label>Telefone<input name="phone"></label>
+        <label>WhatsApp<input name="whatsapp" placeholder="(11) 99999-9999"></label>
+        <label>E-mail<input name="email"></label>
+        <label>Horário de atendimento<input name="hours" placeholder="Seg a Sex, 9h às 18h"></label>
+      </div>
+      <label>Endereço<input name="address"></label>
+      <label>Sobre a empresa<textarea name="about" rows="4"></textarea></label>
+      <label>Serviços (um por linha)<textarea name="services" rows="5"></textarea></label>
+      <div class="grid">
+        <label>Tema<select name="theme"></select></label>
+        <label>Endereço do site (slug)<input name="slug"></label>
+        <label>Meta tag de verificação (Meta/Facebook)<input name="metaVerification"></label>
+        <label>ID do Pixel Meta<input name="pixelId"></label>
+        <label>Domínio próprio (opcional)<input name="customDomain" placeholder="www.minhaempresa.com.br"></label>
+      </div>
+      <label>Código para o &lt;head&gt; (cole aqui a meta tag de verificação da Meta ou qualquer script)<textarea name="headCode" rows="4" style="font-family:monospace" placeholder='&lt;meta name="facebook-domain-verification" content="..." /&gt;'></textarea></label>
+      <div class="actions"><button><button type="button" class="sec" onclick="closeEditor()">Fechar</button></div>
+      <div class="msg" id="emsg"></div>
+    </form>
+  </div>
+</main>
+</div>
+
+<script>
+if (location.protocol === 'file:') {
+  document.body.innerHTML = '<div style="max-width:520px;margin:12vh auto;font-family:system-ui;padding:0 20px"><h2>Abra pelo servidor</h2><p>Este arquivo foi aberto direto do disco. Rode <code>npm start</code> na pasta do projeto e acesse <a href="http://localhost:3000/painel">http://localhost:3000/painel</a>.</p></div>';
+  throw new Error('Abra via http://localhost:3000/painel');
+}
+let cfg, sites = [], editing = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+async function api(path, method = 'GET', body) {
+  const r = await fetch(path, { method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && path !== '/api/login') { showLogin(); throw new Error('Sessão expirada'); }
+  if (!r.ok) throw new Error(d.error || 'Erro');
+  return d;
+}
+function showLogin() { $('app').hidden = true; $('login').hidden = false; }
+async function login() {
+  try { await api('/api/login', 'POST', { password: $('pw').value }); init(); } catch (e) { $('lmsg').textContent = e.message; }
+}
+$('pw').addEventListener('keydown', (e) => e.key === 'Enter' && login());
+async function logout() { await api('/api/logout', 'POST'); showLogin(); }
+
+async function init() {
+  try {
+    cfg = await api('/api/config');
+  } catch { return showLogin(); }
+  $('login').hidden = true; $('app').hidden = false;
+  $('form').theme.innerHTML = Object.entries(cfg.themes).map(([k, t]) => `<option value="${k}">${esc(t.name)}</option>`).join('');
+  load();
+}
+async function load() { sites = await api('/api/sites'); render(); }
+
+function siteUrl(s) {
+  return s.customDomain ? `http://${s.customDomain}` : `${location.origin}/s/${s.slug}`;
+}
+function render() {
+  $('list').innerHTML = sites.length ? sites.map((s) => `
+    <div class="site">
+      <div><b>${esc(s.name)}</b> <span class="badge ${s.published ? 'on' : ''}">${s.published ? 'Publicado' : 'Rascunho'}</span><br>
+        <small><a href="${esc(siteUrl(s))}" target="_blank">${esc(siteUrl(s))}</a> · CNPJ ${esc(s.cnpj)}</small></div>
+      <div class="actions">
+        <button class="sec" onclick="edit('${s.id}')">Editar</button>
+        <button class="${s.published ? 'sec' : 'green'}" onclick="toggle('${s.id}', ${s.published})">${s.published ? 'Despublicar' : 'Publicar'}</button>
+        <button class="red" onclick="del('${s.id}')">Excluir</button>
+      </div>
+    </div>`).join('') : '<p>Nenhum site criado ainda.</p>';
+}
+
+$('cnpj').addEventListener('input', (e) => {
+  const d = e.target.value.replace(/\D/g, '').slice(0, 14);
+  e.target.value = d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+});
+async function create() {
+  $('cmsg').textContent = ''; $('createBtn').disabled = true; $('createBtn').textContent = 'Consultando...';
+  try {
+    const s = await api('/api/sites', 'POST', { cnpj: $('cnpj').value, metaVerification: $('meta').value });
+    $('cnpj').value = ''; $('meta').value = '';
+    await load(); edit(s.id);
+  } catch (e) { $('cmsg').textContent = e.message; }
+  $('createBtn').disabled = false; $('createBtn').textContent = 'Criar site';
+}
+function edit(id) {
+  editing = sites.find((s) => s.id === id);
+  const f = $('form');
+  $('etitle').textContent = editing.name;
+  for (const el of f.elements) {
+    if (!el.name) continue;
+    el.value = el.name === 'services' ? (editing.services || []).join('\n') : (editing[el.name] ?? '');
+  }
+  $('editor').hidden = false; $('editor').scrollIntoView({ behavior: 'smooth' });
+}
+function closeEditor() { $('editor').hidden = true; editing = null; }
+async function saveSite(e) {
+  e.preventDefault(); $('emsg').textContent = '';
+  const body = {};
+  for (const el of $('form').elements) if (el.name) body[el.name] = el.value;
+  body.services = body.services.split('\n').map((x) => x.trim()).filter(Boolean);
+  try { await api('/api/sites/' + editing.id, 'PUT', body); await load(); closeEditor(); } catch (err) { $('emsg').textContent = err.message; }
+}
+async function toggle(id, published) { await api(`/api/sites/${id}/${published ? 'unpublish' : 'publish'}`, 'POST'); load(); }
+async function del(id) { if (confirm('Excluir este site?')) { await api('/api/sites/' + id, 'DELETE'); closeEditor(); load(); } }
+init();
+</script>
+</body></html>
