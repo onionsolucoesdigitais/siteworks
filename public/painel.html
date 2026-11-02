@@ -3,204 +3,482 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
 <title>Painel - Site Works</title>
 <style>
+:root{--bg:#f6f7fb;--surface:#fff;--surface2:#f1f3f9;--line:#e4e7ef;--text:#111827;--muted:#6b7280;--primary:#4f46e5;--primary-h:#4338ca;--primary-soft:#eef0ff;--green:#16a34a;--green-soft:#dcfce7;--amber:#b45309;--amber-soft:#fef3c7;--red:#dc2626;--red-soft:#fee2e2;--side:#0f1226;--side-text:#aab0c8;--shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);--r:12px}
+@media(prefers-color-scheme:dark){:root{--bg:#0b0d1a;--surface:#141729;--surface2:#1b1f36;--line:#262b47;--text:#eceefb;--muted:#9aa1c0;--primary:#818cf8;--primary-h:#a5b4fc;--primary-soft:#1e2247;--green-soft:#0f3320;--amber-soft:#3a2a0a;--amber:#fbbf24;--red-soft:#3b1318;--side:#080a16}}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f1f5f9;color:#0f172a}
-header{background:#0b1020;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 5vw}
-header b span{color:#60a5fa}
-main{max-width:1000px;margin:28px auto;padding:0 5vw}
-.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:20px}
-h2{margin:0 0 14px;font-size:1.15rem}
-input,textarea,select{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;margin-top:4px}
-label{display:block;font-size:.85rem;font-weight:600;color:#475569;margin-bottom:12px}
-button{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}
-button.sec{background:#e2e8f0;color:#0f172a}button.red{background:#dc2626}button.green{background:#16a34a}
-.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.row>*{flex:1;min-width:200px}.row button{flex:0 0 auto}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
-.site{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #e2e8f0;flex-wrap:wrap}
-.site:first-of-type{border-top:0}
-.badge{font-size:.75rem;padding:3px 9px;border-radius:99px;background:#fef3c7;color:#92400e;font-weight:700}
-.badge.on{background:#dcfce7;color:#166534}
-.msg{color:#dc2626;font-size:.9rem;margin-top:8px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-a{color:#2563eb}
-#login{max-width:360px;margin:12vh auto}
+html,body{height:100%}
+body{margin:0;font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+[hidden]{display:none!important}
+a{color:var(--primary)}
+button{font:inherit;cursor:pointer}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* layout */
+#app{display:grid;grid-template-columns:248px 1fr;min-height:100%}
+aside{background:var(--side);color:var(--side-text);display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:1.1rem;padding:0 8px 22px}
+.brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#22d3ee);display:grid;place-items:center;font-style:normal;font-size:.95rem}
+nav{display:flex;flex-direction:column;gap:4px;flex:1}
+nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--side-text);text-decoration:none;font-weight:500}
+nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+nav a.on{background:rgba(129,140,248,.18);color:#fff}
+nav .count{margin-left:auto;background:#6366f1;color:#fff;border-radius:99px;font-size:.72rem;padding:1px 8px;font-weight:600}
+.logout{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--side-text);padding:10px 12px;border-radius:10px;width:100%}
+.logout:hover{background:rgba(255,255,255,.06);color:#fff}
+.content{min-width:0;padding:32px clamp(16px,4vw,48px) 64px;max-width:1120px;width:100%}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+h1{margin:0;font-size:1.55rem;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:2px 0 0;font-size:.92rem}
+
+/* componentes */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:10px;padding:9px 16px;font-weight:600;background:var(--primary);color:#fff;transition:.15s}
+.btn:hover{background:var(--primary-h)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.ghost{background:var(--surface);color:var(--text);border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface2)}
+.btn.green{background:var(--green)}
+.btn.danger{background:var(--surface);color:var(--red);border-color:var(--line)}
+.btn.danger:hover{background:var(--red-soft)}
+.btn.sm{padding:6px 12px;font-size:.88rem}
+.btn.icon{padding:8px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;padding:2px 10px;border-radius:99px;background:var(--amber-soft);color:var(--amber)}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.on{background:var(--green-soft);color:var(--green)}
+label{display:block;font-size:.85rem;font-weight:600;margin-bottom:16px}
+label small{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+input,textarea,select{width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;transition:.15s}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+textarea{resize:vertical}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.suffix{display:flex;align-items:stretch;margin-top:6px}
+.suffix input{margin:0;border-radius:10px 0 0 10px;border-right:0;min-width:0}
+.suffix span{display:flex;align-items:center;padding:0 12px;border:1px solid var(--line);border-radius:0 10px 10px 0;background:var(--surface2);color:var(--muted);font-weight:400;font-size:.9rem;white-space:nowrap}
+.err{color:var(--red);font-size:.88rem;margin:8px 0 0;min-height:1.2em}
+.empty{text-align:center;padding:56px 20px;color:var(--muted)}
+.empty b{display:block;color:var(--text);font-size:1.05rem;margin-bottom:4px}
+
+/* lista de sites */
+.tools{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.tools input{margin:0;flex:1;min-width:200px}
+.tools select{margin:0;width:auto}
+.site{display:flex;align-items:center;gap:16px;padding:16px 20px;border-top:1px solid var(--line)}
+.site:first-child{border-top:0}
+.avatar{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.site .info{flex:1;min-width:0}
+.site .name{font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.site .meta{color:var(--muted);font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.site .acts{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:700px){.site{flex-wrap:wrap}.site .acts{width:100%}}
+
+/* editor */
+.crumb{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:.9rem;margin-bottom:10px}
+.crumb:hover{color:var(--text)}
+.savestate{font-size:.85rem;color:var(--muted);min-width:90px;text-align:right}
+.savestate.ok{color:var(--green)}.savestate.bad{color:var(--red)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+.tabs button{background:none;border:0;color:var(--muted);padding:10px 14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{color:var(--primary);border-color:var(--primary)}
+.panel{padding:24px}
+.themes{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.themes label{margin:0;cursor:pointer}
+.themes input{position:absolute;opacity:0;width:0;height:0}
+.themes span{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;font-weight:500}
+.themes span i{width:18px;height:18px;border-radius:50%}
+.themes input:checked+span{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.hint{background:var(--surface2);border-radius:10px;padding:12px 14px;color:var(--muted);font-size:.88rem;margin-bottom:16px}
+
+/* mensagens */
+.msg{padding:18px 20px;border-top:1px solid var(--line)}
+.msg:first-child{border-top:0}
+.msg header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.msg p{margin:8px 0 0;white-space:pre-wrap;word-break:break-word}
+.msg .meta{color:var(--muted);font-size:.85rem}
+
+/* login, dialog, toast */
+#login{min-height:100%;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#0f1226,#312e81)}
+#login .card{width:100%;max-width:380px;padding:32px}
+#login h1{font-size:1.4rem;margin-bottom:4px}
+dialog{border:1px solid var(--line);border-radius:16px;padding:0;background:var(--surface);color:var(--text);width:min(460px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,12,30,.55)}
+dialog form{padding:24px}
+dialog h2{margin:0 0 4px;font-size:1.2rem}
+dialog .foot{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:10px;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:50}
+
+/* mobile: menu vira barra inferior */
+@media(max-width:800px){
+  #app{grid-template-columns:1fr}
+  aside{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;padding:6px;z-index:20;border-top:1px solid #1e2240}
+  .brand{display:none}
+  nav{flex-direction:row;justify-content:space-around}
+  nav a,.logout{flex-direction:column;gap:2px;font-size:.72rem;padding:6px 14px;width:auto}
+  .logout span{display:inline}
+  .content{padding-bottom:96px}
+}
 </style>
 </head>
 <body>
-<div id="login" class="card" hidden>
-  <h2>Entrar no painel</h2>
-  <label>Senha<input id="pw" type="password" autofocus></label>
-  <button onclick="login()">Entrar</button><div class="msg" id="lmsg"></div>
+
+<div id="login" hidden>
+  <div class="card">
+    <h1>Site Works</h1>
+    <p class="sub" style="margin-bottom:20px">Entre para gerenciar seus sites.</p>
+    <label>Senha<input id="pw" type="password" autofocus autocomplete="current-password"></label>
+    <button class="btn" style="width:100%" onclick="login()">Entrar</button>
+    <p class="err" id="lmsg"></p>
+  </div>
 </div>
 
 <div id="app" hidden>
-<header><b>Site<span>Works</span></b><button class="sec" onclick="logout()">Sair</button></header>
-<main>
-  <div class="card" id="newCard">
-    <h2>Criar novo site</h2>
-    <div class="row">
-      <label>CNPJ da empresa<input id="cnpj" placeholder="00.000.000/0000-00" maxlength="18"></label>
-      <label>Meta tag de verificação (opcional)<input id="meta" placeholder="código do facebook-domain-verification"></label>
-      <button onclick="create()" id="createBtn">Criar site</button>
-    </div>
-    <div class="msg" id="cmsg"></div>
-  </div>
+  <aside>
+    <div class="brand"><i>S</i> Site Works</div>
+    <nav>
+      <a href="#/sites" id="nav-sites"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>Sites</a>
+      <a href="#/mensagens" id="nav-msgs"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mensagens<span class="count" id="msgCount" hidden></span></a>
+    </nav>
+    <button class="logout" onclick="logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Sair</span></button>
+  </aside>
 
-  <div class="card"><h2>Meus sites</h2><div id="list"></div></div>
-
-  <div class="card"><h2>Mensagens recebidas</h2><div id="msgs"></div></div>
-
-  <div class="card" id="editor" hidden>
-    <h2>Editar: <span id="etitle"></span></h2>
-    <form id="form" onsubmit="saveSite(event)">
-      <div class="grid">
-        <label>Nome<input name="name"></label>
-        <label>Razão social<input name="legalName"></label>
-        <label>Título principal<input name="headline"></label>
-        <label>Slogan / atividade<input name="tagline"></label>
-        <label>Telefone<input name="phone"></label>
-        <label>WhatsApp<input name="whatsapp" placeholder="(11) 99999-9999"></label>
-        <label>E-mail<input name="email"></label>
-        <label>Horário de atendimento<input name="hours" placeholder="Seg a Sex, 9h às 18h"></label>
+  <main class="content">
+    <!-- Sites -->
+    <section id="v-sites" hidden>
+      <div class="top">
+        <div><h1>Sites</h1><p class="sub" id="sitesSub"></p></div>
+        <button class="btn" onclick="openNew()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Novo site</button>
       </div>
-      <label>Endereço<input name="address"></label>
-      <label>Sobre a empresa<textarea name="about" rows="4"></textarea></label>
-      <label>Serviços (um por linha)<textarea name="services" rows="5"></textarea></label>
-      <div class="grid">
-        <label>Tema<select name="theme"></select></label>
-        <label>Endereço do site (slug)<input name="slug"></label>
-        <label>Meta tag de verificação (Meta/Facebook)<input name="metaVerification" placeholder="cole a tag inteira ou só o código"></label>
-        <label>ID do Pixel Meta<input name="pixelId"></label>
-        <label>Domínio próprio (opcional)<input name="customDomain" placeholder="www.minhaempresa.com.br"></label>
+      <div class="tools">
+        <input id="q" type="search" placeholder="Buscar por nome, CNPJ ou endereço…">
+        <select id="statusFilter"><option value="">Todos</option><option value="1">Publicados</option><option value="0">Rascunhos</option></select>
       </div>
-      <label>Outros códigos para o &lt;head&gt; (scripts, pixels de terceiros)<textarea name="headCode" rows="4" style="font-family:monospace" placeholder='&lt;script&gt;...&lt;/script&gt;'></textarea></label>
-      <div class="actions"><button type="submit">Salvar</button><button type="button" class="sec" onclick="closeEditor()">Fechar</button></div>
-      <div class="msg" id="emsg" style="color:#166534"></div>
-    </form>
-  </div>
-</main>
+      <div class="card" id="list"></div>
+    </section>
+
+    <!-- Mensagens -->
+    <section id="v-msgs" hidden>
+      <div class="top"><div><h1>Mensagens</h1><p class="sub">Contatos recebidos pelos formulários dos sites.</p></div></div>
+      <div class="card" id="msgs"></div>
+    </section>
+
+    <!-- Editor -->
+    <section id="v-edit" hidden>
+      <a class="crumb" href="#/sites"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Sites</a>
+      <div class="top">
+        <div><h1 id="etitle"></h1><p class="sub"><span id="estatus"></span> · <a id="eurl" target="_blank" rel="noopener"></a></p></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="savestate" id="savestate"></span>
+          <button class="btn danger" onclick="askDelete(editing.id)">Excluir</button>
+          <button class="btn" id="pubBtn" onclick="togglePublish()"></button>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button data-tab="conteudo" class="on">Conteúdo</button>
+        <button data-tab="contato">Contato</button>
+        <button data-tab="aparencia">Aparência e endereço</button>
+        <button data-tab="marketing">Marketing</button>
+      </div>
+
+      <form id="form" class="card panel" autocomplete="off" onsubmit="return false">
+        <div data-pane="conteudo">
+          <div class="grid">
+            <label>Título principal<input name="headline"></label>
+            <label>Slogan / atividade<input name="tagline"></label>
+          </div>
+          <label>Sobre a empresa<textarea name="about" rows="5"></textarea></label>
+          <label>Serviços<textarea name="services" rows="6"></textarea><small>Um serviço por linha.</small></label>
+        </div>
+
+        <div data-pane="contato" hidden>
+          <div class="grid">
+            <label>Nome da empresa<input name="name"></label>
+            <label>Razão social<input name="legalName"></label>
+            <label>Telefone<input name="phone" inputmode="tel"></label>
+            <label>WhatsApp<input name="whatsapp" inputmode="tel" placeholder="(11) 99999-9999"></label>
+            <label>E-mail<input name="email" type="email"></label>
+            <label>Horário de atendimento<input name="hours" placeholder="Seg a Sex, 9h às 18h"></label>
+          </div>
+          <label>Endereço<input name="address"></label>
+        </div>
+
+        <div data-pane="aparencia" hidden>
+          <label>Tema
+            <div class="themes" id="themes"></div>
+          </label>
+          <label>Endereço do site
+            <div class="suffix"><input name="slug" spellcheck="false"><span id="slugSuffix"></span></div>
+            <small>Apenas letras minúsculas, números e hífens.</small>
+          </label>
+          <label>Domínio próprio <small style="display:inline">(opcional)</small>
+            <input name="customDomain" placeholder="www.minhaempresa.com.br" spellcheck="false">
+            <small>O domínio precisa estar apontado para o Worker na Cloudflare.</small>
+          </label>
+        </div>
+
+        <div data-pane="marketing" hidden>
+          <div class="grid">
+            <label>Verificação de domínio (Meta)
+              <input name="metaVerification" class="mono" spellcheck="false" placeholder="Cole a tag inteira ou só o código">
+              <small>Ao colar a tag completa, o código é extraído sozinho.</small>
+            </label>
+            <label>ID do Pixel Meta<input name="pixelId" class="mono" inputmode="numeric" placeholder="123456789012345"></label>
+          </div>
+          <label>Outros códigos para o &lt;head&gt;
+            <textarea name="headCode" rows="5" class="mono" spellcheck="false" placeholder="&lt;script&gt;…&lt;/script&gt;"></textarea>
+            <small>Scripts de analytics ou outras tags. Não é preciso repetir a meta tag nem o pixel acima.</small>
+          </label>
+        </div>
+        <p class="err" id="emsg"></p>
+      </form>
+    </section>
+  </main>
 </div>
 
+<dialog id="newDlg">
+  <form onsubmit="create(event)">
+    <h2>Novo site</h2>
+    <p class="sub" style="margin-bottom:18px">Informe o CNPJ e preenchemos os dados da empresa automaticamente.</p>
+    <label>CNPJ<input id="cnpj" placeholder="00.000.000/0000-00" maxlength="18" inputmode="numeric" autocomplete="off" required></label>
+    <p class="err" id="cmsg"></p>
+    <div class="foot">
+      <button type="button" class="btn ghost" onclick="newDlg.close()">Cancelar</button>
+      <button class="btn" id="createBtn">Criar site</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="delDlg">
+  <form method="dialog">
+    <h2>Excluir site?</h2>
+    <p class="sub" id="delText" style="margin-bottom:18px"></p>
+    <div class="foot">
+      <button class="btn ghost" value="no">Cancelar</button>
+      <button class="btn" style="background:var(--red)" value="yes">Excluir</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" hidden></div>
+
 <script>
-if (location.protocol === 'file:') {
-  document.body.innerHTML = '<div style="max-width:520px;margin:12vh auto;font-family:system-ui;padding:0 20px"><h2>Abra pelo servidor</h2><p>Este arquivo foi aberto direto do disco. Rode <code>npm start</code> na pasta do projeto e acesse <a href="http://localhost:3000/painel">http://localhost:3000/painel</a>.</p></div>';
-  throw new Error('Abra via http://localhost:3000/painel');
-}
-let cfg, sites = [], editing = null;
+let cfg, sites = [], msgs = [], editing = null, delId = null, saveTimer, dirty = false, saving = null;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const newDlg = $('newDlg'), delDlg = $('delDlg');
+
 async function api(path, method = 'GET', body) {
   const r = await fetch(path, { method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   const d = await r.json().catch(() => ({}));
   if (r.status === 401 && path !== '/api/login') { showLogin(); throw new Error('Sessão expirada'); }
-  if (!r.ok) throw new Error(d.error || 'Erro');
+  if (!r.ok) throw new Error(d.error || 'Erro inesperado');
   return d;
 }
-function showLogin() { $('app').hidden = true; $('login').hidden = false; }
+let toastTimer;
+function toast(t) { const el = $('toast'); el.textContent = t; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), 2400); }
+
+/* ---------- login ---------- */
+function showLogin() { $('app').hidden = true; $('login').hidden = false; $('pw').focus(); }
 async function login() {
-  try { await api('/api/login', 'POST', { password: $('pw').value }); init(); } catch (e) { $('lmsg').textContent = e.message; }
+  $('lmsg').textContent = '';
+  try { await api('/api/login', 'POST', { password: $('pw').value }); $('pw').value = ''; init(); } catch (e) { $('lmsg').textContent = e.message; }
 }
 $('pw').addEventListener('keydown', (e) => e.key === 'Enter' && login());
 async function logout() { await api('/api/logout', 'POST'); showLogin(); }
 
 async function init() {
-  try {
-    cfg = await api('/api/config');
-  } catch { return showLogin(); }
+  try { cfg = await api('/api/config'); } catch { return showLogin(); }
   $('login').hidden = true; $('app').hidden = false;
-  $('form').theme.innerHTML = Object.entries(cfg.themes).map(([k, t]) => `<option value="${k}">${esc(t.name)}</option>`).join('');
-  load();
+  $('themes').innerHTML = Object.entries(cfg.themes).map(([k, t]) => `<label><input type="radio" name="theme" value="${k}"><span><i style="background:${t.primary}"></i>${esc(t.name)}</span></label>`).join('');
+  $('slugSuffix').textContent = '.' + (cfg.baseDomain || 'localhost');
+  await Promise.all([loadSites(), loadMsgs()]);
+  route();
 }
-async function load() { sites = await api('/api/sites'); render(); loadMsgs(); }
-async function loadMsgs() {
-  const m = await api('/api/messages');
-  $('msgs').innerHTML = m.length ? m.map((x) => `<div class="site"><div><b>${esc(x.name)}</b> · ${esc(x.email)} ${esc(x.phone)}<br><small>${esc(x.siteName)} · ${new Date(x.at).toLocaleString('pt-BR')}</small><br>${esc(x.message)}</div><button class="red" onclick="delMsg('${x.id}')">Apagar</button></div>`).join('') : '<p>Nenhuma mensagem.</p>';
-}
-async function delMsg(id) { await api('/api/messages/' + id, 'DELETE'); loadMsgs(); }
-
+const hasDomain = () => cfg.baseDomain && cfg.baseDomain !== 'localhost';
 function siteUrl(s) {
   if (s.customDomain) return `https://${s.customDomain}`;
-  if (cfg.baseDomain && cfg.baseDomain !== 'localhost') return `https://${s.slug}.${cfg.baseDomain}`;
-  return `${location.origin}/s/${s.slug}`;
+  return hasDomain() ? `https://${s.slug}.${cfg.baseDomain}` : `${location.origin}/s/${s.slug}`;
 }
-function render() {
-  $('list').innerHTML = sites.length ? sites.map((s) => `
-    <div class="site">
-      <div><b>${esc(s.name)}</b> <span class="badge ${s.published ? 'on' : ''}">${s.published ? 'Publicado' : 'Rascunho'}</span><br>
-        <small><a href="${esc(siteUrl(s))}" target="_blank">${esc(siteUrl(s))}</a> · CNPJ ${esc(s.cnpj)}</small></div>
-      <div class="actions">
-        <button class="sec" onclick="edit('${s.id}')">Editar</button>
-        <button class="${s.published ? 'sec' : 'green'}" onclick="toggle('${s.id}', ${s.published})">${s.published ? 'Despublicar' : 'Publicar'}</button>
-        <button class="red" onclick="del('${s.id}')">Excluir</button>
-      </div>
-    </div>`).join('') : '<p>Nenhum site criado ainda.</p>';
+const shortUrl = (s) => siteUrl(s).replace(/^https?:\/\//, '');
+
+/* ---------- roteamento ---------- */
+window.addEventListener('hashchange', route);
+async function route() {
+  if (!cfg) return;
+  if (editing && dirty) await flush();
+  const h = location.hash.replace(/^#\/?/, '');
+  const [page, id] = h.split('/');
+  for (const v of ['sites', 'msgs', 'edit']) $('v-' + v).hidden = true;
+  $('nav-sites').classList.toggle('on', page !== 'mensagens');
+  $('nav-msgs').classList.toggle('on', page === 'mensagens');
+  if (page === 'mensagens') { $('v-msgs').hidden = false; await loadMsgs(); return; }
+  if (page === 'site' && sites.some((s) => s.id === id)) { openEditor(id); return; }
+  editing = null;
+  $('v-sites').hidden = false; renderSites();
 }
 
+/* ---------- lista de sites ---------- */
+async function loadSites() { sites = await api('/api/sites'); }
+function renderSites() {
+  const q = $('q').value.trim().toLowerCase(), st = $('statusFilter').value;
+  const digits = q.replace(/\D/g, '');
+  const list = sites.filter((s) =>
+    (!st || String(+s.published) === st) &&
+    (!q || [s.name, s.address, s.slug].some((v) => String(v || '').toLowerCase().includes(q)) || (digits && String(s.cnpj).includes(digits))));
+  const pub = sites.filter((s) => s.published).length;
+  $('sitesSub').textContent = sites.length ? `${sites.length} ${sites.length === 1 ? 'site' : 'sites'} · ${pub} ${pub === 1 ? 'publicado' : 'publicados'}` : 'Gere um mini-site a partir do CNPJ da empresa.';
+  if (!sites.length) { $('list').innerHTML = `<div class="empty"><b>Nenhum site ainda</b>Clique em “Novo site” e informe um CNPJ.</div>`; return; }
+  if (!list.length) { $('list').innerHTML = `<div class="empty"><b>Nada encontrado</b>Tente outra busca ou filtro.</div>`; return; }
+  $('list').innerHTML = list.map((s) => {
+    const color = (cfg.themes[s.theme] || cfg.themes.azul).primary;
+    return `<div class="site">
+      <div class="avatar" style="background:${color}">${esc((s.name || '?').charAt(0).toUpperCase())}</div>
+      <div class="info">
+        <div class="name">${esc(s.name)} <span class="badge ${s.published ? 'on' : ''}">${s.published ? 'Publicado' : 'Rascunho'}</span></div>
+        <div class="meta">${esc(shortUrl(s))} · CNPJ ${esc(fmtCnpj(s.cnpj))}</div>
+      </div>
+      <div class="acts">
+        ${s.published ? `<a class="btn ghost sm" href="${esc(siteUrl(s))}" target="_blank" rel="noopener">Abrir</a>` : ''}
+        <a class="btn sm" href="#/site/${s.id}">Editar</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+$('q').addEventListener('input', renderSites);
+$('statusFilter').addEventListener('change', renderSites);
+const fmtCnpj = (c) => String(c).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+
+/* ---------- novo site ---------- */
+function openNew() { $('cnpj').value = ''; $('cmsg').textContent = ''; newDlg.showModal(); $('cnpj').focus(); }
 $('cnpj').addEventListener('input', (e) => {
   const d = e.target.value.replace(/\D/g, '').slice(0, 14);
   e.target.value = d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
 });
-// Extrai o codigo da meta tag do Facebook (aceita a tag inteira ou so o codigo)
+async function create(e) {
+  e.preventDefault();
+  const b = $('createBtn'); $('cmsg').textContent = ''; b.disabled = true; b.textContent = 'Consultando…';
+  try {
+    const s = await api('/api/sites', 'POST', { cnpj: $('cnpj').value });
+    sites.push(s); newDlg.close(); location.hash = '#/site/' + s.id; toast('Site criado. Revise os dados e publique.');
+  } catch (err) { $('cmsg').textContent = err.message; }
+  b.disabled = false; b.textContent = 'Criar site';
+}
+
+/* ---------- editor ---------- */
+const form = $('form');
+function openEditor(id) {
+  editing = sites.find((s) => s.id === id); dirty = false;
+  $('v-edit').hidden = false;
+  for (const el of form.elements) {
+    if (!el.name) continue;
+    if (el.type === 'radio') el.checked = el.value === (editing.theme || 'azul');
+    else el.value = el.name === 'services' ? (editing.services || []).join('\n') : (editing[el.name] ?? '');
+  }
+  normalizeMeta(); setTab('conteudo'); refreshHeader(); setSave('');
+  $('emsg').textContent = '';
+}
+function refreshHeader() {
+  $('etitle').textContent = editing.name;
+  $('estatus').innerHTML = `<span class="badge ${editing.published ? 'on' : ''}">${editing.published ? 'Publicado' : 'Rascunho'}</span>`;
+  const a = $('eurl'); a.textContent = shortUrl(editing); a.href = siteUrl(editing);
+  const b = $('pubBtn'); b.textContent = editing.published ? 'Despublicar' : 'Publicar site';
+  b.className = 'btn ' + (editing.published ? 'ghost' : 'green');
+}
+function setTab(t) {
+  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('[data-pane]').forEach((p) => (p.hidden = p.dataset.pane !== t));
+}
+$('tabs').addEventListener('click', (e) => e.target.dataset.tab && setTab(e.target.dataset.tab));
+
+// Extrai o codigo da meta tag do Facebook (aceita a tag inteira ou so o codigo) e evita duplicar no <head>
 const FB_TAG = /<meta[^>]*facebook-domain-verification[^>]*>/gi;
 const fbCode = (v) => { const m = String(v).match(/content\s*=\s*["']([^"']+)["']/i); return (m ? m[1] : String(v)).trim(); };
-// Se a tag foi colada no campo de codigos, move o codigo para o campo da meta tag (sem duplicar)
 function normalizeMeta() {
-  const f = $('form'), head = f.headCode.value, found = head.match(FB_TAG);
-  if (found) { f.metaVerification.value = fbCode(found[0]); f.headCode.value = head.replace(FB_TAG, '').trim(); }
-  else if (/[<>]/.test(f.metaVerification.value)) f.metaVerification.value = fbCode(f.metaVerification.value);
+  const head = form.headCode.value, found = head.match(FB_TAG);
+  if (found) { form.metaVerification.value = fbCode(found[0]); form.headCode.value = head.replace(FB_TAG, '').trim(); }
+  else if (/[<>]/.test(form.metaVerification.value)) form.metaVerification.value = fbCode(form.metaVerification.value);
 }
-$('meta').addEventListener('input', (e) => { if (/[<>]/.test(e.target.value)) e.target.value = fbCode(e.target.value); });
-// Salva sozinho enquanto edita
-let timer;
-$('form').addEventListener('input', () => {
-  normalizeMeta();
-  $('emsg').textContent = 'Salvando...';
-  clearTimeout(timer); timer = setTimeout(() => persist(false), 600);
+
+// Salva automaticamente enquanto edita
+function setSave(state) {
+  const el = $('savestate');
+  el.className = 'savestate ' + (state === 'ok' ? 'ok' : state === 'bad' ? 'bad' : '');
+  el.textContent = { '': '', saving: 'Salvando…', ok: 'Salvo ✓', bad: 'Erro ao salvar' }[state];
+}
+form.addEventListener('input', (e) => {
+  if (!editing) return;
+  if (e.target.name === 'metaVerification' || e.target.name === 'headCode') normalizeMeta();
+  dirty = true; setSave('saving'); clearTimeout(saveTimer); saveTimer = setTimeout(persist, 700);
 });
+form.addEventListener('change', (e) => { if (e.target.name === 'slug' && editing) { form.slug.value = slugClean(form.slug.value); } });
+const slugClean = (v) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
 function formBody() {
   const body = {};
-  for (const el of $('form').elements) if (el.name) body[el.name] = el.value;
+  for (const el of form.elements) if (el.name && (el.type !== 'radio' || el.checked)) body[el.name] = el.value;
   body.services = body.services.split('\n').map((x) => x.trim()).filter(Boolean);
   return body;
 }
-async function persist(close) {
-  if (!editing) return;
-  const id = editing.id;
+function flush() { clearTimeout(saveTimer); return persist(); }
+async function persist() {
+  if (!editing || !dirty) return saving;
+  const id = editing.id; dirty = false;
+  const run = (async () => {
+    try {
+      const saved = await api('/api/sites/' + id, 'PUT', formBody());
+      const i = sites.findIndex((x) => x.id === id); if (i >= 0) sites[i] = saved;
+      if (editing && editing.id === id) {
+        editing = saved; refreshHeader();
+        if (document.activeElement !== form.slug) form.slug.value = saved.slug;
+        if (!dirty) setSave('ok');
+        $('emsg').textContent = '';
+      }
+    } catch (err) { dirty = true; setSave('bad'); $('emsg').textContent = err.message; }
+  })();
+  saving = run; await run; return;
+}
+async function togglePublish() {
+  await flush();
+  const b = $('pubBtn'); b.disabled = true;
   try {
-    const saved = await api('/api/sites/' + id, 'PUT', formBody());
-    if (!editing || editing.id !== id) return;
-    const i = sites.findIndex((x) => x.id === id); if (i >= 0) sites[i] = saved; editing = saved;
-    render(); $('emsg').textContent = close ? '' : 'Salvo ✓';
-    if (close) closeEditor();
-  } catch (err) { $('emsg').style.color = '#dc2626'; $('emsg').textContent = err.message; return; }
-  $('emsg').style.color = '#166534';
+    const s = await api(`/api/sites/${editing.id}/${editing.published ? 'unpublish' : 'publish'}`, 'POST');
+    sites[sites.findIndex((x) => x.id === s.id)] = s; editing = s; refreshHeader();
+    toast(s.published ? 'Site publicado' : 'Site despublicado');
+  } catch (err) { toast(err.message); }
+  b.disabled = false;
 }
-async function create() {
-  $('cmsg').textContent = ''; $('createBtn').disabled = true; $('createBtn').textContent = 'Consultando...';
-  try {
-    const s = await api('/api/sites', 'POST', { cnpj: $('cnpj').value, metaVerification: $('meta').value });
-    $('cnpj').value = ''; $('meta').value = '';
-    await load(); edit(s.id);
-  } catch (e) { $('cmsg').textContent = e.message; }
-  $('createBtn').disabled = false; $('createBtn').textContent = 'Criar site';
+
+/* ---------- excluir ---------- */
+function askDelete(id) {
+  delId = id; const s = sites.find((x) => x.id === id);
+  $('delText').textContent = `“${s.name}” será removido definitivamente, junto com o endereço ${shortUrl(s)}.`;
+  delDlg.showModal();
 }
-function edit(id) {
-  editing = sites.find((s) => s.id === id);
-  const f = $('form');
-  $('etitle').textContent = editing.name;
-  for (const el of f.elements) {
-    if (!el.name) continue;
-    el.value = el.name === 'services' ? (editing.services || []).join('\n') : (editing[el.name] ?? '');
-  }
-  normalizeMeta(); $('emsg').textContent = '';
-  $('editor').hidden = false; $('editor').scrollIntoView({ behavior: 'smooth' });
+delDlg.addEventListener('close', async () => {
+  if (delDlg.returnValue !== 'yes' || !delId) return;
+  clearTimeout(saveTimer); dirty = false;
+  try { await api('/api/sites/' + delId, 'DELETE'); sites = sites.filter((s) => s.id !== delId); editing = null; toast('Site excluído'); location.hash = '#/sites'; route(); } catch (e) { toast(e.message); }
+  delDlg.returnValue = '';
+});
+
+/* ---------- mensagens ---------- */
+async function loadMsgs() {
+  msgs = await api('/api/messages');
+  const c = $('msgCount'); c.hidden = !msgs.length; c.textContent = msgs.length;
+  $('msgs').innerHTML = msgs.length ? msgs.map((x) => `<div class="msg">
+      <header><b>${esc(x.name)}</b><span class="meta">${esc(x.siteName)} · ${new Date(x.at).toLocaleString('pt-BR')}</span></header>
+      <div class="meta"><a href="mailto:${esc(x.email)}">${esc(x.email)}</a>${x.phone ? ' · ' + esc(x.phone) : ''}</div>
+      <p>${esc(x.message)}</p>
+      <div style="margin-top:10px"><button class="btn danger sm" onclick="delMsg('${x.id}')">Apagar</button></div>
+    </div>`).join('') : '<div class="empty"><b>Nenhuma mensagem</b>Os contatos enviados pelos sites aparecem aqui.</div>';
 }
-function closeEditor() { $('editor').hidden = true; editing = null; }
-async function saveSite(e) { e.preventDefault(); clearTimeout(timer); normalizeMeta(); await persist(true); }
-async function toggle(id, published) { await api(`/api/sites/${id}/${published ? 'unpublish' : 'publish'}`, 'POST'); load(); }
-async function del(id) { if (confirm('Excluir este site?')) { await api('/api/sites/' + id, 'DELETE'); closeEditor(); load(); } }
+async function delMsg(id) { await api('/api/messages/' + id, 'DELETE'); loadMsgs(); toast('Mensagem apagada'); }
+
+window.addEventListener('beforeunload', (e) => { if (dirty) e.preventDefault(); });
 init();
 </script>
 </body></html>
