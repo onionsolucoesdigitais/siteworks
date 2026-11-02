@@ -1,0 +1,16 @@
+{
+  "name": "siteworks",
+  "main": "worker.js",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [
+    { "binding": "DB" }
+  ],
+  "vars": {
+    "BASE_DOMAIN": "localhost"
+  }
+}

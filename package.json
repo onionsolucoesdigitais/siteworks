@@ -1,8 +1,9 @@
 {
   "name": "site-works",
-  "version": "1.0.0",
-  "description": "Gerador de mini-sites para empresas a partir do CNPJ",
-  "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" }
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Gerador de mini-sites para empresas a partir do CNPJ (Cloudflare Workers)",
+  "scripts": { "dev": "wrangler dev", "deploy": "wrangler deploy" },
+  "devDependencies": { "wrangler": "^4" }
 }
