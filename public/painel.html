@@ -71,13 +71,13 @@ a{color:#2563eb}
       <div class="grid">
         <label>Tema<select name="theme"></select></label>
         <label>Endereço do site (slug)<input name="slug"></label>
-        <label>Meta tag de verificação (Meta/Facebook)<input name="metaVerification"></label>
+        <label>Meta tag de verificação (Meta/Facebook)<input name="metaVerification" placeholder="cole a tag inteira ou só o código"></label>
         <label>ID do Pixel Meta<input name="pixelId"></label>
         <label>Domínio próprio (opcional)<input name="customDomain" placeholder="www.minhaempresa.com.br"></label>
       </div>
-      <label>Código para o &lt;head&gt; (cole aqui a meta tag de verificação da Meta ou qualquer script)<textarea name="headCode" rows="4" style="font-family:monospace" placeholder='&lt;meta name="facebook-domain-verification" content="..." /&gt;'></textarea></label>
-      <div class="actions"><button><button type="button" class="sec" onclick="closeEditor()">Fechar</button></div>
-      <div class="msg" id="emsg"></div>
+      <label>Outros códigos para o &lt;head&gt; (scripts, pixels de terceiros)<textarea name="headCode" rows="4" style="font-family:monospace" placeholder='&lt;script&gt;...&lt;/script&gt;'></textarea></label>
+      <div class="actions"><button type="submit">Salvar</button><button type="button" class="sec" onclick="closeEditor()">Fechar</button></div>
+      <div class="msg" id="emsg" style="color:#166534"></div>
     </form>
   </div>
 </main>
@@ -142,6 +142,41 @@ $('cnpj').addEventListener('input', (e) => {
   const d = e.target.value.replace(/\D/g, '').slice(0, 14);
   e.target.value = d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
 });
+// Extrai o codigo da meta tag do Facebook (aceita a tag inteira ou so o codigo)
+const FB_TAG = /<meta[^>]*facebook-domain-verification[^>]*>/gi;
+const fbCode = (v) => { const m = String(v).match(/content\s*=\s*["']([^"']+)["']/i); return (m ? m[1] : String(v)).trim(); };
+// Se a tag foi colada no campo de codigos, move o codigo para o campo da meta tag (sem duplicar)
+function normalizeMeta() {
+  const f = $('form'), head = f.headCode.value, found = head.match(FB_TAG);
+  if (found) { f.metaVerification.value = fbCode(found[0]); f.headCode.value = head.replace(FB_TAG, '').trim(); }
+  else if (/[<>]/.test(f.metaVerification.value)) f.metaVerification.value = fbCode(f.metaVerification.value);
+}
+$('meta').addEventListener('input', (e) => { if (/[<>]/.test(e.target.value)) e.target.value = fbCode(e.target.value); });
+// Salva sozinho enquanto edita
+let timer;
+$('form').addEventListener('input', () => {
+  normalizeMeta();
+  $('emsg').textContent = 'Salvando...';
+  clearTimeout(timer); timer = setTimeout(() => persist(false), 600);
+});
+function formBody() {
+  const body = {};
+  for (const el of $('form').elements) if (el.name) body[el.name] = el.value;
+  body.services = body.services.split('\n').map((x) => x.trim()).filter(Boolean);
+  return body;
+}
+async function persist(close) {
+  if (!editing) return;
+  const id = editing.id;
+  try {
+    const saved = await api('/api/sites/' + id, 'PUT', formBody());
+    if (!editing || editing.id !== id) return;
+    const i = sites.findIndex((x) => x.id === id); if (i >= 0) sites[i] = saved; editing = saved;
+    render(); $('emsg').textContent = close ? '' : 'Salvo ✓';
+    if (close) closeEditor();
+  } catch (err) { $('emsg').style.color = '#dc2626'; $('emsg').textContent = err.message; return; }
+  $('emsg').style.color = '#166534';
+}
 async function create() {
   $('cmsg').textContent = ''; $('createBtn').disabled = true; $('createBtn').textContent = 'Consultando...';
   try {
@@ -159,16 +194,11 @@ function edit(id) {
     if (!el.name) continue;
     el.value = el.name === 'services' ? (editing.services || []).join('\n') : (editing[el.name] ?? '');
   }
+  normalizeMeta(); $('emsg').textContent = '';
   $('editor').hidden = false; $('editor').scrollIntoView({ behavior: 'smooth' });
 }
 function closeEditor() { $('editor').hidden = true; editing = null; }
-async function saveSite(e) {
-  e.preventDefault(); $('emsg').textContent = '';
-  const body = {};
-  for (const el of $('form').elements) if (el.name) body[el.name] = el.value;
-  body.services = body.services.split('\n').map((x) => x.trim()).filter(Boolean);
-  try { await api('/api/sites/' + editing.id, 'PUT', body); await load(); closeEditor(); } catch (err) { $('emsg').textContent = err.message; }
-}
+async function saveSite(e) { e.preventDefault(); clearTimeout(timer); normalizeMeta(); await persist(true); }
 async function toggle(id, published) { await api(`/api/sites/${id}/${published ? 'unpublish' : 'publish'}`, 'POST'); load(); }
 async function del(id) { if (confirm('Excluir este site?')) { await api('/api/sites/' + id, 'DELETE'); closeEditor(); load(); } }
 init();

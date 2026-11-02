@@ -170,6 +170,10 @@ async function api(req, env, url) {
     if (req.method === 'PUT') {
       const body = await readBody(req);
       for (const k of EDITABLE) if (k in body) site[k] = body[k];
+      const fb = String(site.metaVerification || '').match(/content\s*=\s*["']([^"']+)["']/i);
+      if (fb) site.metaVerification = fb[1];
+      const tag = String(site.headCode || '').match(/<meta[^>]*facebook-domain-verification[^>]*content\s*=\s*["']([^"']+)["'][^>]*>/i);
+      if (tag) { site.metaVerification = tag[1]; site.headCode = site.headCode.replace(tag[0], '').trim(); }
       if (!Array.isArray(site.services)) site.services = String(site.services || '').split('\n').map((s) => s.trim()).filter(Boolean);
       site.slug = uniqueSlug(slugify(site.slug || site.name), sites, site.id);
       if (!THEMES[site.theme]) site.theme = 'azul';
