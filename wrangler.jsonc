@@ -11,6 +11,6 @@
     { "binding": "DB" }
   ],
   "vars": {
-    "BASE_DOMAIN": "localhost"
+    "BASE_DOMAIN": "vokartapetes.com"
   }
 }

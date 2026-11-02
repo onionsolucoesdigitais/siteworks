@@ -121,7 +121,9 @@ async function loadMsgs() {
 async function delMsg(id) { await api('/api/messages/' + id, 'DELETE'); loadMsgs(); }
 
 function siteUrl(s) {
-  return s.customDomain ? `http://${s.customDomain}` : `${location.origin}/s/${s.slug}`;
+  if (s.customDomain) return `https://${s.customDomain}`;
+  if (cfg.baseDomain && cfg.baseDomain !== 'localhost') return `https://${s.slug}.${cfg.baseDomain}`;
+  return `${location.origin}/s/${s.slug}`;
 }
 function render() {
   $('list').innerHTML = sites.length ? sites.map((s) => `

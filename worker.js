@@ -194,7 +194,7 @@ export default {
       const base = baseDomain(env);
 
       // Sites publicados em subdominio/dominio proprio
-      if (url.hostname !== base && !url.hostname.endsWith('.workers.dev') && !p.startsWith('/api/')) {
+      if (url.hostname !== base && url.hostname !== 'www.' + base && !url.hostname.endsWith('.workers.dev') && !p.startsWith('/api/')) {
         const hostSite = findSiteByHost(url.hostname, await load(env, 'sites'), base);
         if (hostSite) return await servePublicSite(req, env, url, hostSite, p.slice(1).replace(/\/$/, ''), '');
       }
@@ -202,7 +202,13 @@ export default {
       if (p.startsWith('/api/')) return await api(req, env, url);
 
       const s = p.match(/^\/s\/([\w-]+)(?:\/([\w.-]+))?\/?$/);
-      if (s) return await servePublicSite(req, env, url, (await load(env, 'sites')).find((x) => x.slug === s[1]), s[2] || '', '/s/' + s[1]);
+      if (s) {
+        const site = (await load(env, 'sites')).find((x) => x.slug === s[1]);
+        // no dominio oficial, o endereco canonico e o subdominio
+        if (site?.published && (url.hostname === base || url.hostname === 'www.' + base))
+          return Response.redirect(`https://${site.slug}.${base}/${s[2] || ''}`, 301);
+        return await servePublicSite(req, env, url, site, s[2] || '', '/s/' + s[1]);
+      }
 
       return env.ASSETS.fetch(req); // landing e /painel
     } catch (e) {
